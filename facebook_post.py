@@ -1,9 +1,12 @@
 """Facebook Page poster using Graph API.
 Needs FB_PAGE_ID and FB_PAGE_ACCESS_TOKEN (long-lived Page token).
 Posts a multi-photo album with caption on the first photo.
+Resilient: retries network errors, surfaces token-expiry clearly.
 """
+import json
 import os
-import requests
+
+import _http
 
 PAGE_ID = os.environ.get("FB_PAGE_ID", "")
 TOKEN = os.environ.get("FB_PAGE_ACCESS_TOKEN", "")
@@ -14,17 +17,30 @@ def _enabled():
     return bool(PAGE_ID and TOKEN)
 
 
+def _log_error(label, resp):
+    if resp is None:
+        print(f"[fb] {label}: no response")
+        return
+    body = resp.text[:400]
+    if "OAuth" in body or "expired" in body.lower() or "access token" in body.lower():
+        print(f"[fb] {label}: TOKEN EXPIRED/INVALID -> regenerate via refresh_fb_tokens.py")
+    print(f"[fb] {label} error: {body}")
+
+
 def _upload_unpublished(image_url):
     """Upload a photo to the Page without publishing it. Returns photo id."""
-    r = requests.post(
+    r = _http.post(
         f"{GRAPH}/{PAGE_ID}/photos",
         data={"url": image_url, "published": "false", "access_token": TOKEN},
         timeout=60,
     )
-    if not r.ok:
-        print("FB upload error:", r.text)
+    if r is None or not r.ok:
+        _log_error("photo upload", r)
         return None
-    return r.json().get("id")
+    try:
+        return r.json().get("id")
+    except Exception:
+        return None
 
 
 def post_album(image_urls, caption):
@@ -38,9 +54,9 @@ def post_album(image_urls, caption):
         if pid:
             media_fbids.append({"media_fbid": pid})
     if not media_fbids:
+        print("[fb] no photos uploaded; aborting album post")
         return False
-    import json
-    r = requests.post(
+    r = _http.post(
         f"{GRAPH}/{PAGE_ID}/feed",
         data={
             "message": caption,
@@ -49,6 +65,7 @@ def post_album(image_urls, caption):
         },
         timeout=60,
     )
-    if not r.ok:
-        print("FB feed post error:", r.text)
-    return r.ok
+    if r is None or not r.ok:
+        _log_error("feed post", r)
+        return False
+    return True

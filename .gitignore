@@ -1,5 +1,22 @@
+# Python
 __pycache__/
 *.pyc
-.env
+*.pyo
 .venv/
+venv/
+
+# Secrets & local config — NEVER commit
+.env
+.env.*
+secrets.json
+tokens.json
+*.key
+*.pem
+credentials*
+
+# Generated / temp
 *.mp4
+*.log
+*.tmp
+.DS_Store
+Thumbs.db

@@ -74,8 +74,7 @@ CHANNELS = [
         "env": "CHANNEL_UK",
         "state_key": "uk",
         "region": "GB",
-        # TODO: replace with your real UK Associates tag once approved
-        "amazon": ("amazon.co.uk", "moviebell-21"),
+        "amazon": ("amazon.co.uk", "moviebelluk-21"),
         "fb": False,
         "pool": {"discover": {"region": "GB", "language": "en"}},
     },

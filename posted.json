@@ -4,7 +4,8 @@
     1226863,
     1171145,
     1439930,
-    1228710
+    1228710,
+    1317448
   ],
   "pro": [
     1381027,
@@ -16,7 +17,8 @@
     "1940-psst-feind-hort-mit-vorsicht-bei-gesprachen-der-spion-im-zug",
     "KhaneiRuyeAb2002",
     "slap-happy-pappy-1940",
-    "betty-boop-1970s-redrawn-colorizations"
+    "betty-boop-1970s-redrawn-colorizations",
+    "silent-danse-serpentine"
   ],
   "us": [
     1184918,
@@ -33,11 +35,11 @@
     1159206
   ],
   "_last_post_ts": {
-    "max": "2026-05-14T09:19:09.943323+00:00",
+    "max": "2026-05-14T17:58:33.613860+00:00",
     "pro": "2026-05-14T15:43:51.185907+00:00",
-    "main": "2026-05-14T13:18:50.843410+00:00",
+    "main": "2026-05-14T18:01:31.855911+00:00",
     "uk": "2026-05-14T15:46:42.816696+00:00",
     "us": "2026-05-14T15:50:25.779062+00:00"
   },
-  "_fb_rotation_idx": 0
+  "_fb_rotation_idx": 1
 }

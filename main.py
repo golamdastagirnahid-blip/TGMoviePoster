@@ -65,7 +65,7 @@ CHANNELS = [
         "state_key": "us",
         "region": "US",
         "amazon": ("amazon.com", "moviebell-20"),
-        "fb": False,
+        "fb": True,
         "pool": {"discover": {"region": "US", "language": "en"}},
     },
     {
@@ -75,7 +75,7 @@ CHANNELS = [
         "state_key": "uk",
         "region": "GB",
         "amazon": ("amazon.co.uk", "moviebelluk-21"),
-        "fb": False,
+        "fb": True,
         "pool": {"discover": {"region": "GB", "language": "en"}},
     },
 ]
@@ -126,7 +126,7 @@ def post_movie(ch, state):
     details = tmdb.movie_details(pick["id"])
     domain, tag = ch["amazon"]
     m = tmdb.format_movie(details, region=ch["region"], amazon_domain=domain, amazon_tag=tag)
-    caption = templates.info_caption(m)
+    caption = templates.info_caption(m, state_key=ch["state_key"])
     images = tmdb.movie_images(details, max_count=5)
 
     ok = False
@@ -141,7 +141,8 @@ def post_movie(ch, state):
         state[ch["state_key"]].append(m["id"])
         print(f"[{ch['name']}] posted: {m['title']}")
         if ch["fb"] and images:
-            if fb.post_album(images, caption):
+            fb_text = templates.fb_caption(m)
+            if fb.post_album(images, fb_text):
                 print(f"[fb] posted: {m['title']}")
 
 
@@ -159,7 +160,7 @@ def post_trailer(ch, state):
     m = tmdb.format_movie(details, region=ch["region"], amazon_domain=domain, amazon_tag=tag)
     if m["trailer"] == "N/A":
         return
-    caption = templates.trailer_caption(m)
+    caption = templates.trailer_caption(m, state_key=ch["state_key"])
     images = tmdb.movie_images(details, max_count=4)
     ok = False
     if len(images) >= 2:
@@ -181,7 +182,7 @@ def post_free(ch, state):
         print(f"[{ch['name']}] nothing found")
         return
     info, path = res
-    caption = templates.free_caption(info)
+    caption = templates.free_caption(info, state_key=ch["state_key"])
     ok = tg.send_video_file(chat, path, caption)
     try:
         os.remove(path)

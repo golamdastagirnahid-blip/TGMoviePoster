@@ -110,6 +110,10 @@ def _build_watch_links(providers_block, title, region, amazon_domain, amazon_tag
 def format_movie(d, region="US", amazon_domain="amazon.com", amazon_tag="moviebell-20"):
     """Turn TMDB details JSON into a flat dict for templates."""
     cast = ", ".join(c["name"] for c in d.get("credits", {}).get("cast", [])[:4]) or "—"
+    director = next(
+        (c["name"] for c in d.get("credits", {}).get("crew", []) if c.get("job") == "Director"),
+        "",
+    )
     genres = ", ".join(g["name"] for g in d.get("genres", [])) or "—"
     trailer = ""
     for v in d.get("videos", {}).get("results", []):
@@ -132,6 +136,7 @@ def format_movie(d, region="US", amazon_domain="amazon.com", amazon_tag="moviebe
         "runtime": d.get("runtime") or "?",
         "overview": (d.get("overview") or "No description available.")[:600],
         "cast": cast,
+        "director": director,
         "trailer": trailer or "N/A",
         "watch": watch,
         "poster_url": f"{IMG}{poster}" if poster else None,

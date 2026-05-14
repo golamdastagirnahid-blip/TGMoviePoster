@@ -132,8 +132,9 @@ def load_state():
 
 
 def save_state(state):
-    for k in state:
-        state[k] = state[k][-MAX_HISTORY:]
+    for k, v in state.items():
+        if isinstance(v, list):
+            state[k] = v[-MAX_HISTORY:]
     STATE_FILE.write_text(json.dumps(state, indent=2))
 
 

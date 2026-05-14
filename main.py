@@ -179,8 +179,16 @@ def _humanize_sleep():
     time.sleep(random.uniform(30, 240))
 
 
+def _release_key(c):
+    """Sort key: newest release first, then highest popularity as tiebreaker."""
+    return (c.get("release_date") or "", c.get("popularity") or 0)
+
+
 def pick_unposted(candidates, posted_ids):
-    random.shuffle(candidates)
+    """Always pick the NEWEST unposted candidate (latest release_date first).
+    Popularity breaks ties when several movies share a release date.
+    """
+    candidates = sorted(candidates, key=_release_key, reverse=True)
     for c in candidates:
         if c["id"] not in posted_ids:
             return c
@@ -188,10 +196,20 @@ def pick_unposted(candidates, posted_ids):
 
 
 def get_pool(spec):
+    """Build a candidate pool. We always merge multiple sources so the freshest
+    theatrical releases + newly-discovered titles are all considered, and
+    pick_unposted picks the newest one.
+    """
     if spec == "now_playing":
-        return tmdb.now_playing()
+        # Latest in cinemas + recently released globally (sorted desc by date)
+        latest = tmdb.discover(sort_by="primary_release_date.desc")
+        return tmdb.now_playing() + latest + tmdb.discover()
     if isinstance(spec, dict) and "discover" in spec:
-        return tmdb.discover(**spec["discover"])
+        kwargs = dict(spec["discover"])
+        # Always also pull the freshest releases for that region/language
+        latest_kwargs = dict(kwargs)
+        latest_kwargs["sort_by"] = "primary_release_date.desc"
+        return tmdb.discover(**latest_kwargs) + tmdb.discover(**kwargs)
     return []
 
 

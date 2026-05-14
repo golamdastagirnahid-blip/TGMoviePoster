@@ -13,7 +13,7 @@ ALL_CHANNELS = {
     "us": ("Movie Bell US", "https://t.me/MovieBellUS"),
     "uk": ("Movie Bell UK", "https://t.me/MovieBellUK"),
 }
-FB_PAGE_URL = "https://www.facebook.com/MovieBell"  # adjust if your handle differs
+FB_PAGE_URL = "https://www.facebook.com/moviebell20"
 
 # ---------------------------------------------------------------------------
 # Telegram templates (Markdown)

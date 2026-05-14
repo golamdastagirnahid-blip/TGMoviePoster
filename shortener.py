@@ -31,7 +31,7 @@ def shorten(url: str) -> str:
     try:
         r = requests.get(
             ENDPOINT,
-            params={"key": API_KEY, "url": url, "format": "text"},
+            params={"api": API_KEY, "url": url, "format": "text"},
             timeout=15,
         )
         if r.ok and r.text.startswith("http"):

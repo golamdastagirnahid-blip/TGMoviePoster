@@ -142,8 +142,8 @@ def post_movie(ch, state):
         state[ch["state_key"]].append(m["id"])
         print(f"[{ch['name']}] posted: {m['title']}")
         if ch["fb"] and images:
-            fb.post_album(images, caption)
-            print(f"[fb] posted: {m['title']}")
+            if fb.post_album(images, caption):
+                print(f"[fb] posted: {m['title']}")
 
 
 def post_trailer(ch, state):

@@ -47,6 +47,14 @@ ACTIVE_HOURS_UTC = {
 # This keeps FB frequency at ~1 post per 30 min worst-case, healthy for FB algo.
 FB_ROTATION = ["main", "us", "uk"]
 
+# Manual trigger detection — bypass humanize gates so the button works instantly.
+# GitHub Actions sets GITHUB_EVENT_NAME=workflow_dispatch when you click "Run workflow".
+# You can also force this locally by setting MANUAL_RUN=1.
+MANUAL_RUN = (
+    os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch"
+    or os.environ.get("MANUAL_RUN") == "1"
+)
+
 # -----------------------------------------------------------------------------
 # CHANNEL CONFIG — one entry per Telegram channel
 # -----------------------------------------------------------------------------
@@ -140,7 +148,11 @@ def _hours_since(iso_ts):
 
 
 def _should_post_now(state_key, state):
-    """Humanized gate: cooldown elapsed + within active hour window."""
+    """Humanized gate: cooldown elapsed + within active hour window.
+    Manual triggers bypass all gates for instant testing.
+    """
+    if MANUAL_RUN:
+        return True, "manual run (gates bypassed)"
     hour = datetime.now(timezone.utc).hour
     if hour not in ACTIVE_HOURS_UTC.get(state_key, list(range(24))):
         return False, f"outside active window (UTC hour={hour})"
@@ -157,7 +169,12 @@ def _mark_posted(state_key, state):
 
 
 def _humanize_sleep():
-    """Random 30s-4min pause to simulate human composing time."""
+    """Random 30s-4min pause to simulate human composing time.
+    Manual triggers use a tiny pause (1-3s) so the test run finishes fast.
+    """
+    if MANUAL_RUN:
+        time.sleep(random.uniform(1, 3))
+        return
     time.sleep(random.uniform(30, 240))
 
 
@@ -274,6 +291,8 @@ def _advance_fb_rotation(state):
 
 
 def main():
+    if MANUAL_RUN:
+        print("[manual] workflow_dispatch detected -> bypassing cooldowns & humanize sleeps")
     state = load_state()
     # Channel order randomized each run so the bot looks less mechanical
     channels = CHANNELS[:]

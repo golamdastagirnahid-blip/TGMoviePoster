@@ -1,0 +1,46 @@
+name: Movie Poster
+
+on:
+  schedule:
+    - cron: "0 */2 * * *"   # every 2 hours
+  workflow_dispatch:         # manual run button
+
+permissions:
+  contents: write            # to commit posted.json
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Run poster
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          CHANNEL_MAIN: ${{ secrets.CHANNEL_MAIN }}
+          CHANNEL_PRO: ${{ secrets.CHANNEL_PRO }}
+          CHANNEL_MAX: ${{ secrets.CHANNEL_MAX }}
+          CHANNEL_US: ${{ secrets.CHANNEL_US }}
+          CHANNEL_UK: ${{ secrets.CHANNEL_UK }}
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+          FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
+          CUTY_API_KEY: ${{ secrets.CUTY_API_KEY }}
+        run: python main.py
+
+      - name: Commit updated posted.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add posted.json
+          git diff --quiet --cached || git commit -m "update posted history [skip ci]"
+          git push

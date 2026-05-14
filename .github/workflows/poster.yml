@@ -28,6 +28,7 @@ jobs:
 
       - name: Run poster
         env:
+          PYTHONUNBUFFERED: "1"
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
           CHANNEL_MAIN: ${{ secrets.CHANNEL_MAIN }}

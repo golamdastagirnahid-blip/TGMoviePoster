@@ -2,7 +2,10 @@ name: Movie Poster
 
 on:
   schedule:
-    - cron: "0 */2 * * *"   # every 2 hours
+    # Runs every 30 min. Inside main.py, per-channel cooldowns + active-hour
+    # windows ensure each channel actually posts only every 3-12 hours. This
+    # gives humanized, irregular timing instead of robotic on-the-hour posts.
+    - cron: "*/30 * * * *"
   workflow_dispatch:         # manual run button
 
 permissions:

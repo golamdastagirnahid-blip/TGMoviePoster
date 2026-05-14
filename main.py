@@ -5,6 +5,7 @@ import json
 import os
 import random
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 import tmdb
@@ -16,6 +17,35 @@ import archive_free
 ROOT = Path(__file__).parent
 STATE_FILE = ROOT / "posted.json"
 MAX_HISTORY = 500
+
+# ----------------------------------------------------------------------------
+# HUMANIZED SCHEDULE
+# ----------------------------------------------------------------------------
+# Workflow fires every 30 min; each channel only posts if enough hours have
+# passed since its last post AND we're inside its active hour window (UTC).
+# Adds 1-15 min random jitter so posts don't land on the same minute every
+# time. Total posts per day per channel: ~4-8 (looks human, not bot).
+# ----------------------------------------------------------------------------
+MIN_HOURS_BETWEEN = {
+    "main": (3, 5),   # 3-5 hours randomized cooldown
+    "pro": (4, 7),
+    "max": (8, 12),   # free films less frequent
+    "us": (4, 6),
+    "uk": (4, 6),
+}
+# Active hour windows in UTC (24h). Skip sleeping hours to look human.
+# US audience peak: 13:00-04:00 UTC (9am-midnight ET)
+# UK audience peak: 07:00-22:00 UTC
+ACTIVE_HOURS_UTC = {
+    "main": list(range(0, 24)),               # always on
+    "pro": list(range(8, 23)),
+    "max": list(range(10, 22)),
+    "us": list(range(13, 24)) + list(range(0, 5)),
+    "uk": list(range(7, 23)),
+}
+# Only ONE channel crossposts to Facebook per workflow run (rotates).
+# This keeps FB frequency at ~1 post per 30 min worst-case, healthy for FB algo.
+FB_ROTATION = ["main", "us", "uk"]
 
 # -----------------------------------------------------------------------------
 # CHANNEL CONFIG — one entry per Telegram channel
@@ -86,6 +116,8 @@ def load_state():
         data = json.loads(STATE_FILE.read_text())
     else:
         data = {}
+    data.setdefault("_last_post_ts", {})  # state_key -> iso timestamp
+    data.setdefault("_fb_rotation_idx", 0)
     for ch in CHANNELS:
         data.setdefault(ch["state_key"], [])
     return data
@@ -95,6 +127,38 @@ def save_state(state):
     for k in state:
         state[k] = state[k][-MAX_HISTORY:]
     STATE_FILE.write_text(json.dumps(state, indent=2))
+
+
+def _hours_since(iso_ts):
+    if not iso_ts:
+        return 1e9
+    try:
+        dt = datetime.fromisoformat(iso_ts)
+        return (datetime.now(timezone.utc) - dt).total_seconds() / 3600
+    except Exception:
+        return 1e9
+
+
+def _should_post_now(state_key, state):
+    """Humanized gate: cooldown elapsed + within active hour window."""
+    hour = datetime.now(timezone.utc).hour
+    if hour not in ACTIVE_HOURS_UTC.get(state_key, list(range(24))):
+        return False, f"outside active window (UTC hour={hour})"
+    lo, hi = MIN_HOURS_BETWEEN.get(state_key, (3, 5))
+    cooldown = random.uniform(lo, hi)
+    elapsed = _hours_since(state["_last_post_ts"].get(state_key))
+    if elapsed < cooldown:
+        return False, f"cooldown {elapsed:.1f}h < {cooldown:.1f}h"
+    return True, "ok"
+
+
+def _mark_posted(state_key, state):
+    state["_last_post_ts"][state_key] = datetime.now(timezone.utc).isoformat()
+
+
+def _humanize_sleep():
+    """Random 30s-4min pause to simulate human composing time."""
+    time.sleep(random.uniform(30, 240))
 
 
 def pick_unposted(candidates, posted_ids):
@@ -140,12 +204,14 @@ def post_movie(ch, state):
     if ok:
         state[ch["state_key"]].append(m["id"])
         print(f"[{ch['name']}] posted: {m['title']}")
-        if ch["fb"]:
+        # FB is intentionally throttled: only the rotation winner crossposts
+        if ch["fb"] and ch["state_key"] == _fb_winner(state):
             fb_imgs = tmdb.fb_images(details, count=4)
             if fb_imgs:
                 fb_text = templates.fb_caption(m)
                 if fb.post_album(fb_imgs, fb_text):
-                    print(f"[fb] posted: {m['title']}")
+                    print(f"[fb] posted ({ch['state_key']}): {m['title']}")
+        _mark_posted(ch["state_key"], state)
 
 
 def post_trailer(ch, state):
@@ -171,6 +237,7 @@ def post_trailer(ch, state):
         ok = tg.send_photo(chat, m["poster_url"], caption)
     if ok:
         state[ch["state_key"]].append(m["id"])
+        _mark_posted(ch["state_key"], state)
         print(f"[{ch['name']}] trailer: {m['title']}")
 
 
@@ -192,22 +259,47 @@ def post_free(ch, state):
         pass
     if ok:
         state[ch["state_key"]].append(info["id"])
+        _mark_posted(ch["state_key"], state)
         print(f"[{ch['name']}] free film: {info['title']}")
+
+
+def _fb_winner(state):
+    """Pick which channel crossposts to FB this run (round-robin)."""
+    idx = state.get("_fb_rotation_idx", 0) % len(FB_ROTATION)
+    return FB_ROTATION[idx]
+
+
+def _advance_fb_rotation(state):
+    state["_fb_rotation_idx"] = (state.get("_fb_rotation_idx", 0) + 1) % len(FB_ROTATION)
 
 
 def main():
     state = load_state()
-    for ch in CHANNELS:
+    # Channel order randomized each run so the bot looks less mechanical
+    channels = CHANNELS[:]
+    random.shuffle(channels)
+    posted_anything = False
+
+    for ch in channels:
+        sk = ch["state_key"]
+        ok_to_post, why = _should_post_now(sk, state)
+        if not ok_to_post:
+            print(f"[skip] {ch['name']}: {why}")
+            continue
         try:
+            _humanize_sleep()
             if ch["kind"] == "movie":
                 post_movie(ch, state)
             elif ch["kind"] == "trailer":
                 post_trailer(ch, state)
             elif ch["kind"] == "free":
                 post_free(ch, state)
+            posted_anything = True
         except Exception as e:
             print(f"[error] {ch['name']}: {e}")
-        time.sleep(3)
+
+    if posted_anything:
+        _advance_fb_rotation(state)
     save_state(state)
     print("done.")
 

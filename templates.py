@@ -153,26 +153,75 @@ def _strip_markdown(text):
     return text
 
 
+# Unicode mathematical bold sans-serif (renders as BOLD on Facebook).
+_BOLD_UPPER = {chr(i): chr(0x1D5D4 + i - ord('A')) for i in range(ord('A'), ord('Z') + 1)}
+_BOLD_LOWER = {chr(i): chr(0x1D5EE + i - ord('a')) for i in range(ord('a'), ord('z') + 1)}
+_BOLD_DIGIT = {chr(i): chr(0x1D7EC + i - ord('0')) for i in range(ord('0'), ord('9') + 1)}
+_BOLD_MAP = {**_BOLD_UPPER, **_BOLD_LOWER, **_BOLD_DIGIT}
+
+
+def _bold(text):
+    """Render ASCII text as Unicode-bold for FB (FB has no markdown)."""
+    return "".join(_BOLD_MAP.get(c, c) for c in text)
+
+
+DIVIDER = "━" * 22  # heavy line, renders well on FB & mobile
+
+
 def fb_caption(m):
-    """SEO-rich Facebook caption. Long-form for max reach."""
+    """SEO-rich, professionally arranged Facebook caption.
+    Big bold movie title at top, clean sections separated by dividers,
+    hashtags at the very end (off-screen on first view but still indexed).
+    """
     m = _safe(m)
-    director = f"\n🎬 Director: {m['director']}" if m["director"] else ""
-    body = (
-        f"🎬 {m['title']} ({m['year']})\n"
-        f"⭐ Rating: {m['rating']}/10  |  ⏱ {m['runtime']} min  |  🌍 {m['language']}\n"
-        f"🎭 Genre: {m['genres']}"
-        f"{director}\n"
-        f"🎟 Cast: {m['cast']}\n\n"
-        f"📝 {m['overview']}\n\n"
-        f"🎥 Watch the Trailer: {m['trailer']}"
-    )
-    if m["watch"]:
-        body += "\n" + _strip_markdown(m["watch"])
-    # SEO footer with channel mentions
-    body += (
-        "\n\n———\n"
-        "📢 Follow for daily movie picks, trailers & where-to-watch guides.\n"
-        f"📱 Telegram: {ALL_CHANNELS['main'][1]}\n\n"
-    )
-    body += _build_hashtags(m)
-    return body
+    title_line = _bold(f"{m['title'].upper()}")  # Changed to uppercase
+    year_badge = f"  —  ({m['year']})"
+    rating = f"⭐ {m['rating']}/10"
+    runtime = f"⏱ {m['runtime']} min" if m['runtime'] != "?" else ""
+    lang = f"🌍 {m['language']}" if m['language'] else ""
+    meta_line = "  •  ".join([x for x in (rating, runtime, lang) if x])
+
+    director_line = f"🎬 Director: {_bold(m['director'])}\n" if m['director'] else ""
+    cast_line = f"🎟 Cast: {m['cast']}" if m['cast'] and m['cast'] != "—" else ""
+    genre_line = f"🎭 Genre: {m['genres']}" if m['genres'] and m['genres'] != "—" else ""
+
+    sections = []
+    # === TITLE BLOCK ===
+    sections.append(f"🎬 {title_line}{year_badge}")
+    sections.append(DIVIDER)
+
+    # === META BLOCK ===
+    sections.append(meta_line)
+    if genre_line:
+        sections.append(genre_line)
+    if director_line:
+        sections.append(director_line.rstrip())
+    if cast_line:
+        sections.append(cast_line)
+    sections.append("")
+
+    # === PLOT ===
+    sections.append(f"📝 {m['overview']}")
+    sections.append("")
+
+    # === LINKS ===
+    sections.append(DIVIDER)
+    if m['trailer'] and m['trailer'] != "N/A":
+        sections.append(f"🎥 {_bold('Watch Trailer')}")  # Changed to bold
+        sections.append(m['trailer'])
+        sections.append("")
+    if m['watch']:
+        sections.append(_strip_markdown(m['watch']).lstrip())
+        sections.append("")
+
+    # === FOOTER ===
+    sections.append(DIVIDER)
+    sections.append("📢 Follow Movie Bell for daily picks, trailers & where-to-watch.")
+    sections.append(f"📱 Telegram: {ALL_CHANNELS['main'][1]}")
+    sections.append(f"🌐 Facebook: {FB_PAGE_URL}")
+    sections.append("")
+
+    # === SEO HASHTAGS ===
+    sections.append(_build_hashtags(m))
+
+    return "\n".join(sections)

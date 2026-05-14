@@ -58,6 +58,32 @@ def movie_details(movie_id):
     )
 
 
+def fb_images(d, count=4):
+    """Pro-arranged image set for Facebook album:
+    - Cover: highest-rated landscape backdrop (fills feed properly)
+    - Then poster (portrait)
+    - Then more top backdrops
+    4 photos = clean 2x2 grid in FB feed.
+    """
+    backdrops = sorted(
+        (d.get("images", {}) or {}).get("backdrops", []) or [],
+        key=lambda b: (b.get("vote_average", 0), b.get("width", 0)),
+        reverse=True,
+    )
+    imgs = []
+    if backdrops and backdrops[0].get("file_path"):
+        imgs.append(f"{IMG}{backdrops[0]['file_path']}")
+    if d.get("poster_path"):
+        imgs.append(f"{IMG}{d['poster_path']}")
+    for b in backdrops[1:]:
+        if len(imgs) >= count:
+            break
+        url = f"{IMG}{b['file_path']}"
+        if url not in imgs:
+            imgs.append(url)
+    return imgs[:count]
+
+
 def movie_images(d, max_count=5):
     """Return up to N HD image URLs: main poster first, then best stills."""
     imgs = []

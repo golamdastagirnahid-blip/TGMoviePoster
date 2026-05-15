@@ -100,6 +100,7 @@ def post_album(image_urls, caption):
     Returns (status, info):
       status in {'ok','policy','duplicate','rate_limit','auth','error'}
     """
+    global _AUTH_DEAD
     if not _enabled():
         print("[fb] skipped (no token)")
         return ("error", "no token")

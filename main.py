@@ -240,14 +240,10 @@ def post_movie(ch, state):
     if ok:
         state[ch["state_key"]].append(m["id"])
         print(f"[{ch['name']}] posted: {m['title']}")
-        # FB is intentionally throttled: only the rotation winner crossposts
-        if ch["fb"] and ch["state_key"] == _fb_winner(state):
-            fb_imgs = tmdb.fb_images(details, count=4)
-            if fb_imgs:
-                fb_text = templates.fb_caption(m)
-                if fb.post_album(fb_imgs, fb_text):
-                    print(f"[fb] posted ({ch['state_key']}): {m['title']}")
         _mark_posted(ch["state_key"], state)
+        # Stash for potential FB crosspost at end of run
+        if ch["fb"]:
+            FB_QUEUE.append({"ch": ch, "m": m, "details": details})
 
 
 def post_trailer(ch, state):
@@ -299,24 +295,44 @@ def post_free(ch, state):
         print(f"[{ch['name']}] free film: {info['title']}")
 
 
-def _fb_winner(state):
-    """Pick which channel crossposts to FB this run (round-robin)."""
+# Queue of fb-eligible posts collected during a run. The first one is crossposted.
+FB_QUEUE = []
+
+
+def _do_fb_crosspost(state):
+    """After all Telegram posts, crosspost ONE fb-eligible post to Facebook.
+    Uses the rotation index to pick a preferred state_key; falls back to
+    whichever fb-eligible post actually happened so FB never stays silent.
+    """
+    if not FB_QUEUE:
+        return
+    preferred = None
     idx = state.get("_fb_rotation_idx", 0) % len(FB_ROTATION)
-    return FB_ROTATION[idx]
-
-
-def _advance_fb_rotation(state):
-    state["_fb_rotation_idx"] = (state.get("_fb_rotation_idx", 0) + 1) % len(FB_ROTATION)
+    preferred_key = FB_ROTATION[idx]
+    for item in FB_QUEUE:
+        if item["ch"]["state_key"] == preferred_key:
+            preferred = item
+            break
+    chosen = preferred or FB_QUEUE[0]
+    m = chosen["m"]
+    fb_imgs = tmdb.fb_images(chosen["details"], count=4)
+    if not fb_imgs:
+        print("[fb] no images for crosspost")
+        return
+    fb_text = templates.fb_caption(m)
+    if fb.post_album(fb_imgs, fb_text):
+        print(f"[fb] posted ({chosen['ch']['state_key']}): {m['title']}")
+        state["_fb_rotation_idx"] = (idx + 1) % len(FB_ROTATION)
 
 
 def main():
     if MANUAL_RUN:
         print("[manual] workflow_dispatch detected -> bypassing cooldowns & humanize sleeps")
     state = load_state()
+    FB_QUEUE.clear()
     # Channel order randomized each run so the bot looks less mechanical
     channels = CHANNELS[:]
     random.shuffle(channels)
-    posted_anything = False
 
     for ch in channels:
         sk = ch["state_key"]
@@ -332,12 +348,10 @@ def main():
                 post_trailer(ch, state)
             elif ch["kind"] == "free":
                 post_free(ch, state)
-            posted_anything = True
         except Exception as e:
             print(f"[error] {ch['name']}: {e}")
 
-    if posted_anything:
-        _advance_fb_rotation(state)
+    _do_fb_crosspost(state)
     save_state(state)
     print("done.")
 

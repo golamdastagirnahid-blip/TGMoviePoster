@@ -36,10 +36,29 @@ FREE_TEMPLATES = [
 ]
 
 
+# Markdown V1 special chars that break Telegram parsing if unbalanced.
+_MD_SPECIAL = re.compile(r"([_*`\[\]])")
+
+
+def _md_escape(s):
+    """Escape Markdown V1 special chars in free-form text from external sources
+    (archive.org, TMDB overviews) so a stray * or _ doesn't break the whole caption."""
+    if not isinstance(s, str):
+        return s
+    return _MD_SPECIAL.sub(r"\\\1", s)
+
+
+# Fields that come from external metadata and may contain markdown-breaking chars.
+_TEXT_FIELDS = ("title", "overview", "genres", "cast", "director", "language")
+
+
 def _safe(m):
     m = dict(m)
     m.setdefault("watch", "")
     m.setdefault("director", "")
+    for f in _TEXT_FIELDS:
+        if f in m:
+            m[f] = _md_escape(m[f])
     return m
 
 

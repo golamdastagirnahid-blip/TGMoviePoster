@@ -86,9 +86,23 @@ def send_video_file(chat_id, file_path, caption):
                 data={"chat_id": chat_id, "caption": caption[:1024], "parse_mode": "Markdown"},
                 files={"video": f},
                 timeout=600,
-                retries=1,  # video uploads are huge; one retry only
+                retries=1,
             )
-        return _ok(r, "sendVideo")
+        if _ok(r, "sendVideo"):
+            return True
+        # Fallback: parse error? retry without Markdown so the post still goes
+        if r is not None and "can't parse entities" in r.text.lower():
+            print("[tg] retrying sendVideo without Markdown")
+            with open(file_path, "rb") as f:
+                r2 = _http.post(
+                    f"{BASE}/sendVideo",
+                    data={"chat_id": chat_id, "caption": caption[:1024]},
+                    files={"video": f},
+                    timeout=600,
+                    retries=1,
+                )
+            return _ok(r2, "sendVideo(plain)")
+        return False
     except OSError as e:
         print(f"[tg] cannot read video: {e}")
         return False

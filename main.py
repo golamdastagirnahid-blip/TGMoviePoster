@@ -408,6 +408,11 @@ def _drain_fb_queue(state):
         gap = _fb_minutes_since_last(fs)
         if gap < required_gap:
             wait_s = (required_gap - gap) * 60
+            # Manual runs: never block longer than 30s; skip with note instead.
+            if MANUAL_RUN and wait_s > 30:
+                print(f"[fb] skipping {item['m']['title']} (manual run, gap {gap:.0f}m < {required_gap:.0f}m; next cron will pick it up)")
+                continue
+            # Scheduled runs: also skip if wait would exceed 2 min
             if not MANUAL_RUN and wait_s > 120:
                 print(f"[fb] skipping {item['m']['title']} (gap {gap:.0f}m < {required_gap:.0f}m)")
                 continue

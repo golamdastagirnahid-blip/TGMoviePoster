@@ -43,11 +43,44 @@ def _upload_unpublished(image_url):
         return None
 
 
+# Facebook error codes that mean "stop posting today":
+# 368 = temporarily blocked for policy violations
+# 506 = duplicate post
+# 1404006 = posting too frequently
+# 1404102 = page suspended/restricted
+POLICY_ERROR_CODES = {368, 1404006, 1404102}
+
+
+def _classify_error(resp):
+    """Return ('policy'|'duplicate'|'transient'|None) based on FB response."""
+    if resp is None:
+        return "transient"
+    try:
+        err = resp.json().get("error", {})
+        code = err.get("code")
+        sub = err.get("error_subcode")
+        msg = (err.get("message") or "").lower()
+        if code in POLICY_ERROR_CODES or sub in POLICY_ERROR_CODES:
+            return "policy"
+        if "spam" in msg or "policy" in msg or "violates" in msg or "restricted" in msg:
+            return "policy"
+        if "duplicate" in msg or code == 506:
+            return "duplicate"
+        if code == 4 or code == 17 or code == 32:  # rate limit codes
+            return "rate_limit"
+    except Exception:
+        pass
+    return "transient"
+
+
 def post_album(image_urls, caption):
-    """Publish a feed post with attached photos (album style)."""
+    """Publish a feed post with attached photos (album style).
+    Returns (status, info):
+      status in {'ok','policy','duplicate','rate_limit','error'}
+    """
     if not _enabled():
         print("[fb] skipped (no token)")
-        return False
+        return ("error", "no token")
     media_fbids = []
     for url in image_urls[:10]:
         pid = _upload_unpublished(url)
@@ -55,7 +88,7 @@ def post_album(image_urls, caption):
             media_fbids.append({"media_fbid": pid})
     if not media_fbids:
         print("[fb] no photos uploaded; aborting album post")
-        return False
+        return ("error", "no photos")
     r = _http.post(
         f"{GRAPH}/{PAGE_ID}/feed",
         data={
@@ -67,5 +100,6 @@ def post_album(image_urls, caption):
     )
     if r is None or not r.ok:
         _log_error("feed post", r)
-        return False
-    return True
+        kind = _classify_error(r)
+        return (kind, r.text[:200] if r is not None else "no response")
+    return ("ok", "")

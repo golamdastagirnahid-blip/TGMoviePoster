@@ -54,9 +54,13 @@ ACTIVE_HOURS_UTC = {
 # Sweet-spot research: Facebook Pages get best organic reach posting
 # 5-15 times/day with >=30 min spacing. We aim at the high end of safe.
 # ----------------------------------------------------------------------------
-FB_MIN_GAP_MIN = 25         # min minutes between two FB posts
-FB_DAILY_CAP = 18           # never exceed this many FB posts in a UTC day
+# Posting cadence is randomized to look human, not fixed.
+FB_GAP_RANGE_MIN = (22, 45)   # random gap minutes between consecutive FB posts
+FB_DAILY_CAP = 15             # safe industry sweet-spot; >18 risks reach penalty
 FB_ROTATION = ["main", "us", "uk"]  # preferred draining order
+# If FB returns a policy/spam error, freeze posting for this many hours.
+FB_POLICY_FREEZE_HOURS = 24
+FB_RATELIMIT_FREEZE_HOURS = 2
 
 # Manual trigger detection — bypass humanize gates so the button works instantly.
 # GitHub Actions sets GITHUB_EVENT_NAME=workflow_dispatch when you click "Run workflow".
@@ -313,11 +317,30 @@ FB_QUEUE = []
 def _fb_state(state):
     """Reset daily counter at UTC date change."""
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    fs = state.setdefault("_fb", {"last_ts": "", "date": today, "count": 0})
+    fs = state.setdefault("_fb", {"last_ts": "", "date": today, "count": 0, "frozen_until": ""})
+    fs.setdefault("frozen_until", "")
     if fs.get("date") != today:
         fs["date"] = today
         fs["count"] = 0
     return fs
+
+
+def _fb_is_frozen(fs):
+    """True if FB is paused due to recent policy/rate-limit error."""
+    until = fs.get("frozen_until") or ""
+    if not until:
+        return False
+    try:
+        return datetime.fromisoformat(until) > datetime.now(timezone.utc)
+    except Exception:
+        return False
+
+
+def _fb_freeze(fs, hours, reason):
+    from datetime import timedelta
+    until = (datetime.now(timezone.utc) + timedelta(hours=hours)).isoformat()
+    fs["frozen_until"] = until
+    print(f"[fb] FROZEN for {hours}h ({reason}); resumes {until}")
 
 
 def _fb_minutes_since_last(fs):
@@ -331,31 +354,45 @@ def _fb_minutes_since_last(fs):
 
 
 def _crosspost_one(item, state):
-    """Crosspost a single queued item; returns True on success."""
+    """Crosspost a single queued item; respects safety responses from FB.
+    Returns one of: 'ok' | 'policy' | 'duplicate' | 'rate_limit' | 'error'.
+    """
     m = item["m"]
     fb_imgs = tmdb.fb_images(item["details"], count=4)
     if not fb_imgs:
         print(f"[fb] no images for {m['title']}")
-        return False
+        return "error"
     fb_text = templates.fb_caption(m)
-    if not fb.post_album(fb_imgs, fb_text):
-        return False
-    print(f"[fb] posted ({item['ch']['state_key']}): {m['title']}")
+    status, info = fb.post_album(fb_imgs, fb_text)
     fs = _fb_state(state)
-    fs["last_ts"] = datetime.now(timezone.utc).isoformat()
-    fs["count"] = fs.get("count", 0) + 1
-    return True
+    if status == "ok":
+        print(f"[fb] posted ({item['ch']['state_key']}): {m['title']}")
+        fs["last_ts"] = datetime.now(timezone.utc).isoformat()
+        fs["count"] = fs.get("count", 0) + 1
+        return "ok"
+    if status == "policy":
+        _fb_freeze(fs, FB_POLICY_FREEZE_HOURS, f"policy violation: {info}")
+    elif status == "rate_limit":
+        _fb_freeze(fs, FB_RATELIMIT_FREEZE_HOURS, f"rate limit: {info}")
+    elif status == "duplicate":
+        print(f"[fb] duplicate detected, skipping {m['title']}")
+    return status
 
 
 def _drain_fb_queue(state):
     """Crosspost as many queued items as safety rules allow.
-    Order: preferred channel from rotation first, then the rest.
-    Safety: min gap between FB posts + daily cap.
+    Safety layers:
+      1. FROZEN window if a recent policy/rate-limit error was received
+      2. Daily cap (FB_DAILY_CAP)
+      3. Random gap (FB_GAP_RANGE_MIN) between consecutive posts (looks human)
+      4. Stop immediately if a policy/rate-limit response arrives mid-drain
     """
     if not FB_QUEUE:
         return
     fs = _fb_state(state)
-    # Drain order: rotation winner first, then others by FB_ROTATION order
+    if _fb_is_frozen(fs):
+        print(f"[fb] frozen until {fs['frozen_until']}; queue skipped")
+        return
     idx = state.get("_fb_rotation_idx", 0) % len(FB_ROTATION)
     priority = FB_ROTATION[idx:] + FB_ROTATION[:idx]
     queue = sorted(
@@ -366,19 +403,22 @@ def _drain_fb_queue(state):
         if fs["count"] >= FB_DAILY_CAP:
             print(f"[fb] daily cap reached ({FB_DAILY_CAP}); stopping")
             break
+        # Random per-post gap so spacing isn't a fixed pattern
+        required_gap = random.uniform(*FB_GAP_RANGE_MIN)
         gap = _fb_minutes_since_last(fs)
-        if gap < FB_MIN_GAP_MIN:
-            wait_s = (FB_MIN_GAP_MIN - gap) * 60
-            # On scheduled runs, just skip leftover items (next cron picks up)
+        if gap < required_gap:
+            wait_s = (required_gap - gap) * 60
             if not MANUAL_RUN and wait_s > 120:
-                print(f"[fb] skipping {item['m']['title']} (gap {gap:.0f}m < {FB_MIN_GAP_MIN}m)")
+                print(f"[fb] skipping {item['m']['title']} (gap {gap:.0f}m < {required_gap:.0f}m)")
                 continue
-            # Manual run: wait so user sees all queued posts
             print(f"[fb] waiting {wait_s:.0f}s for safe gap")
             time.sleep(wait_s)
-        _crosspost_one(item, state)
-        # advance rotation index by 1 so next run prefers a different source
-        state["_fb_rotation_idx"] = (state.get("_fb_rotation_idx", 0) + 1) % len(FB_ROTATION)
+        status = _crosspost_one(item, state)
+        if status in ("policy", "rate_limit"):
+            print("[fb] safety abort: stopping queue drain")
+            return
+        if status == "ok":
+            state["_fb_rotation_idx"] = (state.get("_fb_rotation_idx", 0) + 1) % len(FB_ROTATION)
 
 
 def main():

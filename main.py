@@ -414,7 +414,7 @@ def _drain_fb_queue(state):
             print(f"[fb] waiting {wait_s:.0f}s for safe gap")
             time.sleep(wait_s)
         status = _crosspost_one(item, state)
-        if status in ("policy", "rate_limit"):
+        if status in ("policy", "rate_limit", "auth"):
             print("[fb] safety abort: stopping queue drain")
             return
         if status == "ok":

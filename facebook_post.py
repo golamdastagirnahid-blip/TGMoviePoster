@@ -12,6 +12,9 @@ PAGE_ID = os.environ.get("FB_PAGE_ID", "")
 TOKEN = os.environ.get("FB_PAGE_ACCESS_TOKEN", "")
 GRAPH = "https://graph.facebook.com/v20.0"
 
+# Set True once we hit an auth error in this run, so we don't keep retrying.
+_AUTH_DEAD = False
+
 
 def _enabled():
     return bool(PAGE_ID and TOKEN)
@@ -27,8 +30,24 @@ def _log_error(label, resp):
     print(f"[fb] {label} error: {body}")
 
 
+def _is_auth_error(resp):
+    if resp is None or resp.ok:
+        return False
+    try:
+        err = resp.json().get("error", {})
+        if err.get("code") == 190 or err.get("type") == "OAuthException":
+            return True
+        body = (err.get("message") or "").lower()
+        return "access token" in body or "oauth" in body or "permission" in body
+    except Exception:
+        return False
+
+
 def _upload_unpublished(image_url):
     """Upload a photo to the Page without publishing it. Returns photo id."""
+    global _AUTH_DEAD
+    if _AUTH_DEAD:
+        return None
     r = _http.post(
         f"{GRAPH}/{PAGE_ID}/photos",
         data={"url": image_url, "published": "false", "access_token": TOKEN},
@@ -36,6 +55,9 @@ def _upload_unpublished(image_url):
     )
     if r is None or not r.ok:
         _log_error("photo upload", r)
+        if _is_auth_error(r):
+            _AUTH_DEAD = True
+            print("[fb] auth dead -> skipping all further FB calls this run")
         return None
     try:
         return r.json().get("id")
@@ -76,11 +98,13 @@ def _classify_error(resp):
 def post_album(image_urls, caption):
     """Publish a feed post with attached photos (album style).
     Returns (status, info):
-      status in {'ok','policy','duplicate','rate_limit','error'}
+      status in {'ok','policy','duplicate','rate_limit','auth','error'}
     """
     if not _enabled():
         print("[fb] skipped (no token)")
         return ("error", "no token")
+    if _AUTH_DEAD:
+        return ("auth", "token dead this run")
     media_fbids = []
     for url in image_urls[:10]:
         pid = _upload_unpublished(url)
@@ -100,6 +124,9 @@ def post_album(image_urls, caption):
     )
     if r is None or not r.ok:
         _log_error("feed post", r)
+        if _is_auth_error(r):
+            global _AUTH_DEAD
+            _AUTH_DEAD = True
         kind = _classify_error(r)
         return (kind, r.text[:200] if r is not None else "no response")
     return ("ok", "")

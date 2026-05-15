@@ -43,9 +43,20 @@ ACTIVE_HOURS_UTC = {
     "us": list(range(13, 24)) + list(range(0, 5)),
     "uk": list(range(7, 23)),
 }
-# Only ONE channel crossposts to Facebook per workflow run (rotates).
-# This keeps FB frequency at ~1 post per 30 min worst-case, healthy for FB algo.
-FB_ROTATION = ["main", "us", "uk"]
+# ----------------------------------------------------------------------------
+# FACEBOOK STRATEGY (maximize-but-safe)
+# ----------------------------------------------------------------------------
+# Every fb-eligible Telegram post is queued for crossposting. We then drain
+# the queue under two safety rules so Facebook's algorithm doesn't down-rank
+# us for spam-like behavior:
+#   - FB_MIN_GAP_MIN: minimum minutes between two consecutive FB posts.
+#   - FB_DAILY_CAP:   max FB posts in a single UTC day.
+# Sweet-spot research: Facebook Pages get best organic reach posting
+# 5-15 times/day with >=30 min spacing. We aim at the high end of safe.
+# ----------------------------------------------------------------------------
+FB_MIN_GAP_MIN = 25         # min minutes between two FB posts
+FB_DAILY_CAP = 18           # never exceed this many FB posts in a UTC day
+FB_ROTATION = ["main", "us", "uk"]  # preferred draining order
 
 # Manual trigger detection — bypass humanize gates so the button works instantly.
 # GitHub Actions sets GITHUB_EVENT_NAME=workflow_dispatch when you click "Run workflow".
@@ -295,34 +306,79 @@ def post_free(ch, state):
         print(f"[{ch['name']}] free film: {info['title']}")
 
 
-# Queue of fb-eligible posts collected during a run. The first one is crossposted.
+# Queue of fb-eligible posts collected during a run.
 FB_QUEUE = []
 
 
-def _do_fb_crosspost(state):
-    """After all Telegram posts, crosspost ONE fb-eligible post to Facebook.
-    Uses the rotation index to pick a preferred state_key; falls back to
-    whichever fb-eligible post actually happened so FB never stays silent.
+def _fb_state(state):
+    """Reset daily counter at UTC date change."""
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    fs = state.setdefault("_fb", {"last_ts": "", "date": today, "count": 0})
+    if fs.get("date") != today:
+        fs["date"] = today
+        fs["count"] = 0
+    return fs
+
+
+def _fb_minutes_since_last(fs):
+    last = fs.get("last_ts") or ""
+    if not last:
+        return 1e9
+    try:
+        return (datetime.now(timezone.utc) - datetime.fromisoformat(last)).total_seconds() / 60
+    except Exception:
+        return 1e9
+
+
+def _crosspost_one(item, state):
+    """Crosspost a single queued item; returns True on success."""
+    m = item["m"]
+    fb_imgs = tmdb.fb_images(item["details"], count=4)
+    if not fb_imgs:
+        print(f"[fb] no images for {m['title']}")
+        return False
+    fb_text = templates.fb_caption(m)
+    if not fb.post_album(fb_imgs, fb_text):
+        return False
+    print(f"[fb] posted ({item['ch']['state_key']}): {m['title']}")
+    fs = _fb_state(state)
+    fs["last_ts"] = datetime.now(timezone.utc).isoformat()
+    fs["count"] = fs.get("count", 0) + 1
+    return True
+
+
+def _drain_fb_queue(state):
+    """Crosspost as many queued items as safety rules allow.
+    Order: preferred channel from rotation first, then the rest.
+    Safety: min gap between FB posts + daily cap.
     """
     if not FB_QUEUE:
         return
-    preferred = None
+    fs = _fb_state(state)
+    # Drain order: rotation winner first, then others by FB_ROTATION order
     idx = state.get("_fb_rotation_idx", 0) % len(FB_ROTATION)
-    preferred_key = FB_ROTATION[idx]
-    for item in FB_QUEUE:
-        if item["ch"]["state_key"] == preferred_key:
-            preferred = item
+    priority = FB_ROTATION[idx:] + FB_ROTATION[:idx]
+    queue = sorted(
+        FB_QUEUE,
+        key=lambda it: priority.index(it["ch"]["state_key"]) if it["ch"]["state_key"] in priority else 999,
+    )
+    for item in queue:
+        if fs["count"] >= FB_DAILY_CAP:
+            print(f"[fb] daily cap reached ({FB_DAILY_CAP}); stopping")
             break
-    chosen = preferred or FB_QUEUE[0]
-    m = chosen["m"]
-    fb_imgs = tmdb.fb_images(chosen["details"], count=4)
-    if not fb_imgs:
-        print("[fb] no images for crosspost")
-        return
-    fb_text = templates.fb_caption(m)
-    if fb.post_album(fb_imgs, fb_text):
-        print(f"[fb] posted ({chosen['ch']['state_key']}): {m['title']}")
-        state["_fb_rotation_idx"] = (idx + 1) % len(FB_ROTATION)
+        gap = _fb_minutes_since_last(fs)
+        if gap < FB_MIN_GAP_MIN:
+            wait_s = (FB_MIN_GAP_MIN - gap) * 60
+            # On scheduled runs, just skip leftover items (next cron picks up)
+            if not MANUAL_RUN and wait_s > 120:
+                print(f"[fb] skipping {item['m']['title']} (gap {gap:.0f}m < {FB_MIN_GAP_MIN}m)")
+                continue
+            # Manual run: wait so user sees all queued posts
+            print(f"[fb] waiting {wait_s:.0f}s for safe gap")
+            time.sleep(wait_s)
+        _crosspost_one(item, state)
+        # advance rotation index by 1 so next run prefers a different source
+        state["_fb_rotation_idx"] = (state.get("_fb_rotation_idx", 0) + 1) % len(FB_ROTATION)
 
 
 def main():
@@ -351,7 +407,7 @@ def main():
         except Exception as e:
             print(f"[error] {ch['name']}: {e}")
 
-    _do_fb_crosspost(state)
+    _drain_fb_queue(state)
     save_state(state)
     print("done.")
 

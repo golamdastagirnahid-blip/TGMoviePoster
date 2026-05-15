@@ -125,7 +125,6 @@ def post_album(image_urls, caption):
     if r is None or not r.ok:
         _log_error("feed post", r)
         if _is_auth_error(r):
-            global _AUTH_DEAD
             _AUTH_DEAD = True
         kind = _classify_error(r)
         return (kind, r.text[:200] if r is not None else "no response")

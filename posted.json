@@ -47,7 +47,8 @@
     931285,
     1620034,
     1122573,
-    1669057
+    1669057,
+    1430077
   ],
   "max": [
     "1940-psst-feind-hort-mit-vorsicht-bei-gesprachen-der-spion-im-zug",
@@ -64,7 +65,8 @@
     "NYFFReviewStigBjorkmansIngridBergmanInHerOwnWords",
     "silent-the-old-maid-having-her-picture-taken",
     "BeToCheShahkarB",
-    "PreviewWhenAManLoves"
+    "PreviewWhenAManLoves",
+    "SherlockHolmesBaffled"
   ],
   "us": [
     1184918,
@@ -111,20 +113,21 @@
     1480387,
     1470130,
     628847,
-    1290417
+    1290417,
+    1160360
   ],
   "_last_post_ts": {
-    "max": "2026-05-18T12:39:22.290617+00:00",
-    "pro": "2026-05-18T16:32:45.660328+00:00",
+    "max": "2026-05-19T10:26:56.791057+00:00",
+    "pro": "2026-05-19T10:34:43.032143+00:00",
     "main": "2026-05-19T06:15:55.033314+00:00",
-    "uk": "2026-05-18T21:50:54.709316+00:00",
+    "uk": "2026-05-19T10:30:50.864559+00:00",
     "us": "2026-05-18T21:49:52.880577+00:00"
   },
-  "_fb_rotation_idx": 1,
+  "_fb_rotation_idx": 2,
   "_fb": {
-    "last_ts": "2026-05-18T21:55:06.355326+00:00",
+    "last_ts": "2026-05-19T10:35:07.628353+00:00",
     "date": "2026-05-19",
-    "count": 0,
+    "count": 1,
     "frozen_until": ""
   }
 }

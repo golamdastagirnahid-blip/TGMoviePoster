@@ -108,7 +108,8 @@
     1515729,
     1628448,
     1542261,
-    1522079
+    1522079,
+    1274706
   ],
   "pro": [
     1381027,
@@ -198,7 +199,8 @@
     "HisRoyalHighness-RareAustralianTrailer",
     "first-graders-1985",
     "midnight-cowboy-1969",
-    "lssah-marsch-ss-leibstandarte-adolf-hitler-ss-parademarsch"
+    "lssah-marsch-ss-leibstandarte-adolf-hitler-ss-parademarsch",
+    "TienneJulesMareyGeorgesDemennHommeNuLevantLesBras1893"
   ],
   "us": [
     1184918,
@@ -349,17 +351,17 @@
     1198984
   ],
   "_last_post_ts": {
-    "max": "2026-06-06T11:09:50.688105+00:00",
+    "max": "2026-06-06T19:41:40.429666+00:00",
     "pro": "2026-06-06T17:45:38.092849+00:00",
-    "main": "2026-06-06T14:48:37.590542+00:00",
+    "main": "2026-06-06T19:44:37.536566+00:00",
     "uk": "2026-06-06T14:52:22.395428+00:00",
     "us": "2026-06-06T14:56:20.814681+00:00"
   },
-  "_fb_rotation_idx": 0,
+  "_fb_rotation_idx": 1,
   "_fb": {
-    "last_ts": "2026-06-06T14:56:35.947693+00:00",
+    "last_ts": "2026-06-06T19:44:51.759487+00:00",
     "date": "2026-06-06",
-    "count": 2,
+    "count": 3,
     "frozen_until": ""
   }
 }

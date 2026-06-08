@@ -116,7 +116,8 @@
     1641319,
     1556616,
     1599189,
-    1358005
+    1358005,
+    1217931
   ],
   "pro": [
     1381027,
@@ -210,7 +211,8 @@
     "lssah-marsch-ss-leibstandarte-adolf-hitler-ss-parademarsch",
     "TienneJulesMareyGeorgesDemennHommeNuLevantLesBras1893",
     "paunch-n-judy-1940",
-    "BritishDirectorKenLoachWinsHisSecondPalmeDOrAtCannes"
+    "BritishDirectorKenLoachWinsHisSecondPalmeDOrAtCannes",
+    "showing-off-1931"
   ],
   "us": [
     1184918,
@@ -366,20 +368,21 @@
     936075,
     1316092,
     1358005,
-    1115544
+    1115544,
+    1327688
   ],
   "_last_post_ts": {
-    "max": "2026-06-07T19:57:42.484070+00:00",
+    "max": "2026-06-08T10:09:37.930234+00:00",
     "pro": "2026-06-07T18:13:14.287762+00:00",
-    "main": "2026-06-08T05:17:50.914802+00:00",
-    "uk": "2026-06-07T21:21:46.225829+00:00",
+    "main": "2026-06-08T10:14:53.616121+00:00",
+    "uk": "2026-06-08T10:14:15.266698+00:00",
     "us": "2026-06-08T00:16:14.483115+00:00"
   },
-  "_fb_rotation_idx": 1,
+  "_fb_rotation_idx": 2,
   "_fb": {
-    "last_ts": "2026-06-08T05:18:12.065752+00:00",
+    "last_ts": "2026-06-08T10:15:03.025716+00:00",
     "date": "2026-06-08",
-    "count": 2,
+    "count": 3,
     "frozen_until": ""
   }
 }

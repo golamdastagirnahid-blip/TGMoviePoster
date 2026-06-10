@@ -124,7 +124,8 @@
     1383731,
     1300501,
     1653208,
-    1439584
+    1439584,
+    1510769
   ],
   "pro": [
     1381027,
@@ -223,7 +224,8 @@
     "BritishDirectorKenLoachWinsHisSecondPalmeDOrAtCannes",
     "showing-off-1931",
     "wild-life-1959",
-    "pourquoi-israel-israel-why-by-claude-lanzmann"
+    "pourquoi-israel-israel-why-by-claude-lanzmann",
+    "MoralityWithoutGodAndTotalitarianismSlavojZizekThePervertsGuideToIdeology"
   ],
   "us": [
     1184918,
@@ -390,20 +392,21 @@
     799882,
     1469354,
     1159559,
-    1306368
+    1306368,
+    1234731
   ],
   "_last_post_ts": {
-    "max": "2026-06-09T11:34:05.681127+00:00",
+    "max": "2026-06-10T11:03:09.039727+00:00",
     "pro": "2026-06-09T19:36:07.625936+00:00",
-    "main": "2026-06-10T06:38:42.292208+00:00",
-    "uk": "2026-06-09T19:38:07.845006+00:00",
+    "main": "2026-06-10T11:06:10.130953+00:00",
+    "uk": "2026-06-10T11:07:56.753523+00:00",
     "us": "2026-06-09T21:50:51.897662+00:00"
   },
-  "_fb_rotation_idx": 0,
+  "_fb_rotation_idx": 1,
   "_fb": {
-    "last_ts": "2026-06-09T21:51:41.047348+00:00",
+    "last_ts": "2026-06-10T11:08:06.824977+00:00",
     "date": "2026-06-10",
-    "count": 0,
+    "count": 1,
     "frozen_until": ""
   }
 }

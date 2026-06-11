@@ -128,7 +128,8 @@
     1510769,
     1083884,
     1084244,
-    687163
+    687163,
+    875828
   ],
   "pro": [
     1381027,
@@ -229,7 +230,8 @@
     "showing-off-1931",
     "wild-life-1959",
     "pourquoi-israel-israel-why-by-claude-lanzmann",
-    "MoralityWithoutGodAndTotalitarianismSlavojZizekThePervertsGuideToIdeology"
+    "MoralityWithoutGodAndTotalitarianismSlavojZizekThePervertsGuideToIdeology",
+    "Niespodzianka"
   ],
   "us": [
     1184918,
@@ -401,20 +403,21 @@
     1306368,
     1234731,
     1318447,
-    1119449
+    1119449,
+    1584215
   ],
   "_last_post_ts": {
-    "max": "2026-06-10T11:03:09.039727+00:00",
+    "max": "2026-06-11T10:03:50.440183+00:00",
     "pro": "2026-06-10T17:46:41.992636+00:00",
-    "main": "2026-06-11T05:13:01.985468+00:00",
-    "uk": "2026-06-10T22:55:25.069845+00:00",
+    "main": "2026-06-11T09:53:20.209903+00:00",
+    "uk": "2026-06-11T09:57:21.019947+00:00",
     "us": "2026-06-10T20:40:26.542127+00:00"
   },
-  "_fb_rotation_idx": 2,
+  "_fb_rotation_idx": 0,
   "_fb": {
-    "last_ts": "2026-06-11T05:13:16.265826+00:00",
+    "last_ts": "2026-06-11T10:04:02.644759+00:00",
     "date": "2026-06-11",
-    "count": 1,
+    "count": 2,
     "frozen_until": ""
   }
 }

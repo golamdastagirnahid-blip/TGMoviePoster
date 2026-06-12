@@ -134,7 +134,8 @@
     1706197,
     1560681,
     1110034,
-    1613798
+    1613798,
+    1265609
   ],
   "pro": [
     1381027,
@@ -239,7 +240,8 @@
     "pourquoi-israel-israel-why-by-claude-lanzmann",
     "MoralityWithoutGodAndTotalitarianismSlavojZizekThePervertsGuideToIdeology",
     "Niespodzianka",
-    "hoor-on-fire-hoor-dar-atash-1991-720p"
+    "hoor-on-fire-hoor-dar-atash-1991-720p",
+    "silent-romanska-delegacija-vo-poseta-na-bitola"
   ],
   "us": [
     1184918,
@@ -420,17 +422,17 @@
     1043197
   ],
   "_last_post_ts": {
-    "max": "2026-06-11T20:31:34.725988+00:00",
+    "max": "2026-06-12T13:00:43.784739+00:00",
     "pro": "2026-06-12T09:49:46.333037+00:00",
-    "main": "2026-06-12T09:46:16.123627+00:00",
+    "main": "2026-06-12T12:58:01.241426+00:00",
     "uk": "2026-06-12T09:48:55.983893+00:00",
     "us": "2026-06-11T20:33:55.585670+00:00"
   },
-  "_fb_rotation_idx": 0,
+  "_fb_rotation_idx": 1,
   "_fb": {
-    "last_ts": "2026-06-12T09:49:58.196650+00:00",
+    "last_ts": "2026-06-12T13:00:55.153559+00:00",
     "date": "2026-06-12",
-    "count": 2,
+    "count": 3,
     "frozen_until": ""
   }
 }

@@ -218,7 +218,8 @@
     1635276,
     1715095,
     1212763,
-    1276704
+    1276704,
+    1108427
   ],
   "pro": [
     1381027,
@@ -301,7 +302,8 @@
     1612018,
     950028,
     1397485,
-    1108427
+    1108427,
+    880067
   ],
   "max": [
     "1940-psst-feind-hort-mit-vorsicht-bei-gesprachen-der-spion-im-zug",
@@ -383,7 +385,8 @@
     "goud-e-moghaddas",
     "LeReveDesMarmitons",
     "LaChaisePorteursEnchante",
-    "HadiKhorsandiInSweden2012-SighehDarKoupeh"
+    "HadiKhorsandiInSweden2012-SighehDarKoupeh",
+    "a-torrid-toreador-1942"
   ],
   "us": [
     1184918,
@@ -669,17 +672,17 @@
     1242898
   ],
   "_last_post_ts": {
-    "max": "2026-07-01T12:20:34.470359+00:00",
-    "pro": "2026-07-01T22:52:50.716107+00:00",
-    "main": "2026-07-02T04:42:38.630715+00:00",
+    "max": "2026-07-02T11:15:13.316125+00:00",
+    "pro": "2026-07-02T11:13:23.701491+00:00",
+    "main": "2026-07-02T11:11:27.550021+00:00",
     "uk": "2026-07-02T08:17:48.677841+00:00",
     "us": "2026-07-02T04:44:25.027803+00:00"
   },
-  "_fb_rotation_idx": 2,
+  "_fb_rotation_idx": 0,
   "_fb": {
-    "last_ts": "2026-07-02T08:21:21.825253+00:00",
+    "last_ts": "2026-07-02T11:15:29.076909+00:00",
     "date": "2026-07-02",
-    "count": 2,
+    "count": 3,
     "frozen_until": ""
   }
 }

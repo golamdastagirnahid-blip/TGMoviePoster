@@ -497,7 +497,8 @@
     "de-oldify-stoomgemalen-in-nederland-in-1933-in-kleur-1080p-ai-p-3-1933",
     "1938-zum-guten-tropfen-shell-werbung-hans-fischerkoesen",
     "magoos-check-up-1955",
-    "haji-agha-the-movie-actor-1933"
+    "haji-agha-the-movie-actor-1933",
+    "silent-les-rsultats-du-fminisme-aka-the-consequences-of-feminism"
   ],
   "us": [
     1184918,
@@ -675,7 +676,8 @@
     799882,
     803796,
     911430,
-    755898
+    755898,
+    1323475
   ],
   "uk": [
     617126,
@@ -870,17 +872,17 @@
     1588237
   ],
   "_last_post_ts": {
-    "max": "2026-07-16T10:36:37.099397+00:00",
+    "max": "2026-07-16T19:19:41.942986+00:00",
     "pro": "2026-07-16T12:14:12.345397+00:00",
     "main": "2026-07-16T17:47:06.805834+00:00",
     "uk": "2026-07-16T17:49:38.674603+00:00",
-    "us": "2026-07-16T14:35:48.851332+00:00"
+    "us": "2026-07-16T19:25:30.438418+00:00"
   },
-  "_fb_rotation_idx": 0,
+  "_fb_rotation_idx": 1,
   "_fb": {
-    "last_ts": "2026-07-16T17:49:55.171386+00:00",
+    "last_ts": "2026-07-16T19:25:47.424274+00:00",
     "date": "2026-07-16",
-    "count": 5,
+    "count": 6,
     "frozen_until": ""
   }
 }

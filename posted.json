@@ -456,7 +456,8 @@
     1620682,
     1110034,
     980431,
-    1361774
+    1361774,
+    87513
   ],
   "max": [
     "1940-psst-feind-hort-mit-vorsicht-bei-gesprachen-der-spion-im-zug",
@@ -576,7 +577,8 @@
     "woodman-spare-that-tree-1950",
     "DuncesAndDangers_921",
     "hold-anything-1930",
-    "goliath-der-panzerzerstorer"
+    "goliath-der-panzerzerstorer",
+    "YekRoyaeKhosoosiSverigesRadio"
   ],
   "us": [
     1184918,
@@ -1005,8 +1007,8 @@
     980431
   ],
   "_last_post_ts": {
-    "max": "2026-07-25T21:00:48.117941+00:00",
-    "pro": "2026-07-25T20:58:07.858240+00:00",
+    "max": "2026-07-26T10:51:55.677678+00:00",
+    "pro": "2026-07-26T10:53:30.546307+00:00",
     "main": "2026-07-26T09:01:22.909775+00:00",
     "uk": "2026-07-26T09:05:28.436815+00:00",
     "us": "2026-07-26T03:26:36.563129+00:00"

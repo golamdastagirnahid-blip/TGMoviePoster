@@ -405,7 +405,8 @@
     315635,
     1571101,
     799882,
-    539972
+    539972,
+    1930
   ],
   "pro": [
     1381027,
@@ -571,7 +572,8 @@
     1329016,
     1233413,
     1404304,
-    1671548
+    1671548,
+    1291595
   ],
   "max": [
     "1940-psst-feind-hort-mit-vorsicht-bei-gesprachen-der-spion-im-zug",
@@ -720,7 +722,8 @@
     "LeSculpteurExpress",
     "silent-la-danseuse-microscopique-aka-marvellous-egg-production-aka-the-dancing-midget",
     "the-landlady-1900-la-concierge-directed-by-alice-guy-blache",
-    "silvery-moon-1933"
+    "silvery-moon-1933",
+    "the-fat-and-lean-wrestling-match-1900-nouvelles-luttes-extravagantes-directed-by-georges-melies"
   ],
   "us": [
     1184918,
@@ -1248,17 +1251,17 @@
     575265
   ],
   "_last_post_ts": {
-    "max": "2026-08-11T19:45:26.840844+00:00",
-    "pro": "2026-08-11T17:32:18.686546+00:00",
-    "main": "2026-08-12T05:58:19.193861+00:00",
+    "max": "2026-08-12T10:36:35.681956+00:00",
+    "pro": "2026-08-12T10:38:01.890896+00:00",
+    "main": "2026-08-12T10:37:17.170680+00:00",
     "uk": "2026-08-12T07:45:34.096243+00:00",
     "us": "2026-08-11T23:47:09.782436+00:00"
   },
-  "_fb_rotation_idx": 2,
+  "_fb_rotation_idx": 0,
   "_fb": {
-    "last_ts": "2026-08-12T07:45:43.005460+00:00",
+    "last_ts": "2026-08-12T10:38:17.253217+00:00",
     "date": "2026-08-12",
-    "count": 2,
+    "count": 3,
     "frozen_until": ""
   }
 }

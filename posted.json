@@ -477,7 +477,8 @@
     157336,
     1688804,
     1511675,
-    1246049
+    1246049,
+    1213243
   ],
   "pro": [
     1381027,
@@ -840,7 +841,8 @@
     "AllDolledUpArc",
     "hooked-bear-1956",
     "The_Wandering_Jew",
-    "scrooge-or-marleys-ghost-1901-directed-by-walter-r.-booth"
+    "scrooge-or-marleys-ghost-1901-directed-by-walter-r.-booth",
+    "abe-lyman-and-his-orchestra-varsity-drag-1927"
   ],
   "us": [
     1184918,
@@ -1453,17 +1455,17 @@
     246655
   ],
   "_last_post_ts": {
-    "max": "2026-08-25T10:39:35.368602+00:00",
+    "max": "2026-08-26T10:10:29.486138+00:00",
     "pro": "2026-08-24T19:40:42.976259+00:00",
-    "main": "2026-08-26T05:08:48.736607+00:00",
+    "main": "2026-08-26T10:15:39.277217+00:00",
     "uk": "2026-08-26T07:29:06.438354+00:00",
     "us": "2026-08-26T04:11:55.184126+00:00"
   },
-  "_fb_rotation_idx": 1,
+  "_fb_rotation_idx": 2,
   "_fb": {
-    "last_ts": "2026-08-26T07:29:18.201739+00:00",
+    "last_ts": "2026-08-26T10:15:53.000775+00:00",
     "date": "2026-08-26",
-    "count": 3,
+    "count": 4,
     "frozen_until": ""
   }
 }

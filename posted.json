@@ -998,7 +998,8 @@
     "silent-special-march-past-of-st-josephs-scholars-and-special-parade-of-st-matthews-pupils-blackburn",
     "house-cleaning-time-1929",
     "haunebu-testflug",
-    "a-busy-day-1914-directed-by-mack-sennett"
+    "a-busy-day-1914-directed-by-mack-sennett",
+    "the-tale-of-a-shirt-1933"
   ],
   "us": [
     1184918,
@@ -1822,20 +1823,21 @@
     1148365,
     1482547,
     1263337,
-    898704
+    898704,
+    1458857
   ],
   "_last_post_ts": {
-    "max": "2026-10-14T11:41:35.139898+00:00",
+    "max": "2026-10-14T20:35:07.630593+00:00",
     "pro": "2026-10-14T16:57:48.057186+00:00",
     "main": "2026-10-14T16:53:16.336865+00:00",
-    "uk": "2026-10-14T11:40:10.904918+00:00",
+    "uk": "2026-10-14T20:31:47.341538+00:00",
     "us": "2026-10-14T16:56:23.130194+00:00"
   },
-  "_fb_rotation_idx": 1,
+  "_fb_rotation_idx": 2,
   "_fb": {
-    "last_ts": "2026-10-14T16:58:00.324028+00:00",
+    "last_ts": "2026-10-14T20:35:19.896710+00:00",
     "date": "2026-10-14",
-    "count": 3,
+    "count": 4,
     "frozen_until": ""
   }
 }
